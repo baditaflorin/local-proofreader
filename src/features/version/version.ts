@@ -1,6 +1,6 @@
-import { z } from 'zod'
-import type { VersionInfo } from '../../shared/types'
-import { fromBasePath } from '../../shared/staticPath'
+import { z } from "zod";
+import type { VersionInfo } from "../../shared/types";
+import { fromBasePath } from "../../shared/staticPath";
 
 const versionSchema = z.object({
   name: z.string(),
@@ -8,16 +8,16 @@ const versionSchema = z.object({
   commit: z.string(),
   dirty: z.boolean(),
   builtAt: z.string(),
-})
+});
 
 export async function fetchVersionInfo(): Promise<VersionInfo> {
-  const response = await fetch(fromBasePath('version.json'), {
-    cache: 'no-store',
-  })
+  const response = await fetch(fromBasePath("version.json"), {
+    cache: "no-store",
+  });
 
   if (!response.ok) {
-    throw new Error('Version metadata is unavailable.')
+    throw new Error("Version metadata is unavailable.");
   }
 
-  return versionSchema.parse(await response.json())
+  return versionSchema.parse(await response.json());
 }

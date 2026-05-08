@@ -1,8 +1,8 @@
 export function fromBasePath(path: string): string {
-  const normalizedBase = import.meta.env.BASE_URL.endsWith('/')
+  const normalizedBase = import.meta.env.BASE_URL.endsWith("/")
     ? import.meta.env.BASE_URL
-    : `${import.meta.env.BASE_URL}/`
-  const normalizedPath = path.startsWith('/') ? path.slice(1) : path
+    : `${import.meta.env.BASE_URL}/`;
+  const normalizedPath = path.startsWith("/") ? path.slice(1) : path;
 
-  return `${normalizedBase}${normalizedPath}`
+  return `${normalizedBase}${normalizedPath}`;
 }

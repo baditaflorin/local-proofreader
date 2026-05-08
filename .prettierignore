@@ -1,0 +1,15 @@
+node_modules/
+docs/assets/
+docs/404.html
+docs/index.html
+docs/manifest.webmanifest
+docs/registerSW.js
+docs/sw.js
+docs/sw.js.map
+docs/workbox-*.js
+docs/workbox-*.js.map
+extension/dist/
+coverage/
+playwright-report/
+test-results/
+package-lock.json
