@@ -6,7 +6,9 @@
   "scripts": {
     "prebuild": "node scripts/write-version.mjs",
     "dev": "vite",
-    "build": "node scripts/clean-pages-assets.mjs && tsc -b && vite build && cp docs/index.html docs/404.html",
+    "build": "npm run build:app && npm run build:extension",
+    "build:app": "node scripts/clean-pages-assets.mjs && tsc -b && vite build && cp docs/index.html docs/404.html",
+    "build:extension": "vite build --config vite.extension.config.ts",
     "lint": "eslint .",
     "typecheck": "tsc -b",
     "format": "prettier --write .",
@@ -19,6 +21,7 @@
   },
   "dependencies": {
     "@duckdb/duckdb-wasm": "^1.33.1-dev45.0",
+    "@tailwindcss/vite": "^4.2.4",
     "@tanstack/react-query": "^5.100.9",
     "comlink": "^4.4.2",
     "dictionary-en": "^4.0.0",
@@ -27,6 +30,7 @@
     "nspell": "^2.1.5",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
+    "tailwindcss": "^4.2.4",
     "vite-plugin-pwa": "^1.3.0",
     "zod": "^4.4.3"
   },
