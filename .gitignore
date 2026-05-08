@@ -1,0 +1,55 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+tmp/
+coverage/
+*.out
+*.test
+*.local
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.crt
+*.csr
+
+# Go
+bin/
+vendor/
+go.work
+*.exe
+
+# Python
+__pycache__/
+.pytest_cache/
+.venv/
+venv/
+
+# Build/editor caches
+.turbo/
+.cache/
+.vite/
+playwright-report/
+test-results/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
