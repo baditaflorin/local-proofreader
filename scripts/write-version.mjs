@@ -15,6 +15,10 @@ function git(args, fallback) {
 const commit = git(["rev-parse", "--short=12", "HEAD"], "uncommitted");
 const tag = git(["describe", "--tags", "--abbrev=0"], "v0.1.0");
 const dirty = git(["status", "--porcelain"], "") !== "";
+const builtAt = git(
+  ["show", "-s", "--format=%cI", "HEAD"],
+  new Date().toISOString(),
+);
 
 mkdirSync("public", { recursive: true });
 writeFileSync(
@@ -25,7 +29,7 @@ writeFileSync(
       version: tag,
       commit,
       dirty,
-      builtAt: new Date().toISOString(),
+      builtAt,
     },
     null,
     2,
