@@ -55,7 +55,10 @@ const server = createServer((request, response) => {
 });
 
 server.listen(port, "127.0.0.1", () => {
+  const address = server.address();
+  const actualPort =
+    typeof address === "object" && address ? address.port : port;
   process.stdout.write(
-    `Static server listening on http://127.0.0.1:${port}${basePath}/\n`,
+    `Static server listening on http://127.0.0.1:${actualPort}${basePath}/\n`,
   );
 });
