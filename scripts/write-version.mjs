@@ -3,7 +3,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 
 function git(args, fallback) {
   try {
-    return execFileSync('git', args, { encoding: 'utf8' }).trim()
+    return execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
   } catch {
     return fallback
   }

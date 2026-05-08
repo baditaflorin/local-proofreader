@@ -6,7 +6,7 @@
   "scripts": {
     "prebuild": "node scripts/write-version.mjs",
     "dev": "vite",
-    "build": "tsc -b && vite build && cp docs/index.html docs/404.html",
+    "build": "node scripts/clean-pages-assets.mjs && tsc -b && vite build && cp docs/index.html docs/404.html",
     "lint": "eslint .",
     "typecheck": "tsc -b",
     "format": "prettier --write .",
