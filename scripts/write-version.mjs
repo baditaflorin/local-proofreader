@@ -12,7 +12,19 @@ function git(args, fallback) {
   }
 }
 
-const commit = git(["rev-parse", "--short=12", "HEAD"], "uncommitted");
+const sourceCommit = git(
+  [
+    "log",
+    "-1",
+    "--format=%h",
+    "--abbrev=12",
+    "--",
+    ".",
+    ":(exclude)docs",
+    ":(exclude)public/version.json",
+  ],
+  "uncommitted",
+);
 const tag = git(["describe", "--tags", "--abbrev=0"], "v0.1.0");
 const dirty =
   git(
@@ -27,7 +39,7 @@ const dirty =
     "",
   ) !== "";
 const builtAt = git(
-  ["show", "-s", "--format=%cI", "HEAD"],
+  ["show", "-s", "--format=%cI", sourceCommit],
   new Date().toISOString(),
 );
 
@@ -38,7 +50,7 @@ writeFileSync(
     {
       name: "local-proofreader",
       version: tag,
-      commit,
+      commit: sourceCommit,
       dirty,
       builtAt,
     },
