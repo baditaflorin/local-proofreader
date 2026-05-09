@@ -1,0 +1,9 @@
+{
+  "id": "rd08-huge-sec-repeat",
+  "source": "large input generated from SEC-shaped public filing prose",
+  "documentKind": "huge",
+  "requiresAnomalies": ["large-input", "repeated-pattern"],
+  "minGroupedOccurrences": 20,
+  "maxVisibleSuggestions": 25,
+  "maxElapsedMs": 5000
+}

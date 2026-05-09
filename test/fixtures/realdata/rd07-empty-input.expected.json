@@ -1,0 +1,10 @@
+{
+  "id": "rd07-empty-input",
+  "source": "empty editor edge case",
+  "documentKind": "empty",
+  "mustIncludeRuleIds": [],
+  "requiresStates": ["loaded-empty"],
+  "maxSuggestions": 0,
+  "maxVisibleSuggestions": 0,
+  "readingTimeMinutes": 0
+}

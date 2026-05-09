@@ -1,0 +1,9 @@
+{
+  "id": "rd04-sec-ocr-artifacts",
+  "source": "https://www.sec.gov/Archives/edgar/data/789019/000095017025100235/msft-20250630.htm",
+  "documentKind": "legal-sec",
+  "mustIncludeRuleIds": ["normalization.ocr-split-word"],
+  "requiresAnomalies": ["ocr-split-word"],
+  "maxSuggestions": 5,
+  "maxVisibleSuggestions": 5
+}

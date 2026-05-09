@@ -1,0 +1,9 @@
+{
+  "id": "rd10-email-template-code",
+  "source": "https://www.airship.com/docs/guides/messaging/messages/content/email/email-unsubscribe-links/",
+  "documentKind": "email-template",
+  "requiresZones": ["email-header", "url", "template-tag"],
+  "mustNotIncludeRuleIds": ["spelling.hunspell", "grammar.final-punctuation"],
+  "maxSuggestions": 1,
+  "maxVisibleSuggestions": 1
+}

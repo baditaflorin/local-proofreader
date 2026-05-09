@@ -1,0 +1,12 @@
+{
+  "id": "rd05-hn-nested-quote",
+  "source": "https://news.ycombinator.com/item?id=46250205",
+  "documentKind": "social-comment",
+  "mustIncludeRuleIds": [
+    "normalization.glued-quote-marker",
+    "normalization.missing-space-after-punctuation"
+  ],
+  "requiresAnomalies": ["glued-quote-marker"],
+  "maxSuggestions": 5,
+  "maxVisibleSuggestions": 5
+}

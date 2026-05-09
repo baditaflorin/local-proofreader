@@ -1,0 +1,4 @@
+Subject: Welcome to the newsletter
+List-Unsubscribe: <https://example.com/unsubscribe?id=123>, <mailto:unsubscribe@example.com>
+Paste this content: [[ua-unsubscribe href="https://www.example.com/unsubscribe"]]
+{% unsubscribe "YOUR UNSUBSCRIBE TEXT" %}

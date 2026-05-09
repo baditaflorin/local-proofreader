@@ -1,0 +1,8 @@
+{
+  "id": "rd03-hn-soundalike-error",
+  "source": "https://news.ycombinator.com/item?id=41058107",
+  "documentKind": "social-comment",
+  "mustIncludeRuleIds": ["grammar.could-of", "normalization.compound-word"],
+  "maxSuggestions": 6,
+  "maxVisibleSuggestions": 6
+}

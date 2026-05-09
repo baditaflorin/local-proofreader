@@ -1,0 +1,9 @@
+{
+  "id": "rd09-council-pdf-lines",
+  "source": "https://www.consilium.europa.eu/en/press/press-releases/2023/10/20/council-sets-out-vision-for-protecting-fundamental-rights-in-the-digital-world/pdf",
+  "documentKind": "public-sector-pdf",
+  "requiresZones": ["heading", "metadata"],
+  "mustNotIncludeRuleIds": ["spelling.hunspell"],
+  "maxSuggestions": 3,
+  "maxVisibleSuggestions": 3
+}

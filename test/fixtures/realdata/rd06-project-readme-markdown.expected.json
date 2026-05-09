@@ -1,0 +1,9 @@
+{
+  "id": "rd06-project-readme-markdown",
+  "source": "https://github.com/baditaflorin/local-proofreader",
+  "documentKind": "markdown",
+  "mustNotIncludeRuleIds": ["spelling.hunspell", "grammar.final-punctuation"],
+  "requiresZones": ["url", "code-fence"],
+  "maxSuggestions": 1,
+  "maxVisibleSuggestions": 1
+}

@@ -1,0 +1,9 @@
+{
+  "id": "rd02-hn-missing-space",
+  "source": "https://news.ycombinator.com/item?id=25825917",
+  "documentKind": "social-comment",
+  "mustIncludeRuleIds": ["normalization.missing-space-after-punctuation"],
+  "requiresAnomalies": ["glued-punctuation"],
+  "maxSuggestions": 4,
+  "maxVisibleSuggestions": 4
+}
