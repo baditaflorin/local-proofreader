@@ -7,6 +7,6 @@
     "normalization.missing-space-after-punctuation"
   ],
   "requiresAnomalies": ["glued-quote-marker"],
-  "maxSuggestions": 5,
-  "maxVisibleSuggestions": 5
+  "maxSuggestions": 6,
+  "maxVisibleSuggestions": 6
 }

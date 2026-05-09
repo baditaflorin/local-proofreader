@@ -136,6 +136,7 @@ export function regexSuggestions(
         title: rule.title,
         message: rule.message,
         explanation: rule.explanation,
+        reason: rule.explanation,
         start: match.index,
         end: match.index + original.length,
         original,

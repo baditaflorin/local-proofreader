@@ -10,6 +10,13 @@ import {
   rewriteRules,
   styleRules,
 } from "./rules";
+import {
+  anomalySuggestions,
+  ignoredZoneKindsList,
+  normalizationChangeSuggestions,
+  overlapsIgnoredZone,
+  prepareInput,
+} from "./inference";
 
 interface SpellChecker {
   correct(word: string): boolean;
@@ -42,38 +49,63 @@ export async function analyzeText(
   request: AnalysisRequest,
 ): Promise<AnalysisResult> {
   const started = performance.now();
-  const text = request.text;
+  const prepared = prepareInput(request.text);
+  const text = prepared.text;
   const customWords = request.customWords.map((word) => normalizeWord(word));
   const spell = await loadSpellchecker(request.basePath);
 
   if (spell) {
-    for (const word of [...domainWords, ...customWords]) {
+    for (const word of [
+      ...domainWords,
+      ...documentVocabulary(prepared.document.kind),
+      ...customWords,
+    ]) {
       if (word) {
         spell.add(word);
       }
     }
   }
 
-  const suggestions = [
-    ...regexSuggestions(text, grammarRules),
-    ...repeatedWordSuggestions(text),
-    ...capitalizationSuggestions(text),
-    ...finalPunctuationSuggestion(text),
-    ...passiveVoiceSuggestions(text),
-    ...longSentenceSuggestions(text),
-    ...(spell ? spellingSuggestions(text, spell, new Set(customWords)) : []),
-    ...rewriteSuggestions(text),
-  ].sort((a, b) => a.start - b.start || a.category.localeCompare(b.category));
+  const rawSuggestions = [
+    ...normalizationChangeSuggestions(
+      prepared.normalizations.filter(
+        (change) =>
+          !overlapsIgnoredZone(change.start, change.end, prepared.zones),
+      ),
+    ),
+    ...anomalySuggestions(
+      prepared.anomalies.filter(
+        (anomaly) =>
+          !overlapsIgnoredZone(anomaly.start, anomaly.end, prepared.zones),
+      ),
+    ),
+    ...filterIgnored(regexSuggestions(text, grammarRules), prepared.zones),
+    ...filterIgnored(repeatedWordSuggestions(text), prepared.zones),
+    ...filterIgnored(capitalizationSuggestions(text), prepared.zones),
+    ...finalPunctuationSuggestion(text, prepared.document.kind),
+    ...filterIgnored(passiveVoiceSuggestions(text), prepared.zones),
+    ...longSentenceSuggestions(text, prepared.zones),
+    ...(spell
+      ? spellingSuggestions(text, spell, new Set(customWords), prepared.zones)
+      : []),
+    ...rewriteSuggestions(text, prepared.zones),
+  ].sort((a, b) => a.start - b.start || a.ruleId.localeCompare(b.ruleId));
+
+  const suggestions = groupSuggestions(rawSuggestions);
+  const words = countWords(text);
+  const generatedAt = request.now ?? new Date().toISOString();
 
   return {
     suggestions,
     stats: {
       characters: text.length,
-      words: countWords(text),
+      words,
       sentences: splitSentences(text).length,
-      readingTimeMinutes: Math.max(1, Math.ceil(countWords(text) / 225)),
-      analyzedAt: new Date().toISOString(),
+      readingTimeMinutes: words === 0 ? 0 : Math.max(1, Math.ceil(words / 225)),
+      analyzedAt: generatedAt,
       elapsedMs: Math.round(performance.now() - started),
+      inputHash: stableHash(text),
+      state: analysisState(words, suggestions.length),
     },
     engine: {
       spellcheckerReady: Boolean(spell),
@@ -81,6 +113,20 @@ export async function analyzeText(
       grammarRules: grammarRules.length + 3,
       styleRules: styleRules.length + 2,
       rewriteRules: rewriteRules.length,
+    },
+    document: prepared.document,
+    zones: prepared.zones,
+    anomalies: prepared.anomalies,
+    normalizations: prepared.normalizations,
+    provenance: {
+      schemaVersion: "phase2.v1",
+      appVersion: request.appVersion ?? "v0.1.0",
+      sourceHash: stableHash(text),
+      generatedAt,
+      parameters: {
+        customWordCount: customWords.length,
+        ignoredZoneKinds: ignoredZoneKindsList(),
+      },
     },
   };
 }
@@ -119,6 +165,7 @@ function spellingSuggestions(
   text: string,
   spell: SpellChecker,
   customWords: Set<string>,
+  zones: ReturnType<typeof prepareInput>["zones"],
 ): Suggestion[] {
   const suggestions: Suggestion[] = [];
   const seen = new Set<string>();
@@ -134,6 +181,7 @@ function spellingSuggestions(
       !seen.has(normalized) &&
       !customWords.has(normalized) &&
       !/^[A-Z]{2,}$/.test(original) &&
+      !overlapsIgnoredZone(match.index, match.index + original.length, zones) &&
       !spell.correct(original)
     ) {
       const replacements = spell.suggest(original).slice(0, 4);
@@ -148,6 +196,8 @@ function spellingSuggestions(
         message: `"${original}" is not in the local Hunspell dictionary.`,
         explanation:
           "Suggestions are generated locally from the packaged English dictionary.",
+        reason:
+          "The word is in a prose zone and was not found in the local Hunspell dictionary.",
         start: match.index,
         end: match.index + original.length,
         original,
@@ -177,6 +227,7 @@ function repeatedWordSuggestions(text: string): Suggestion[] {
       title: "Repeated word",
       message: "The same word appears twice in a row.",
       explanation: "Repeated words are often accidental typing mistakes.",
+      reason: "Two identical words appear with only whitespace between them.",
       start: match.index,
       end: match.index + match[0].length,
       original: match[0],
@@ -206,6 +257,7 @@ function capitalizationSuggestions(text: string): Suggestion[] {
       message: "Sentences should usually begin with a capital letter.",
       explanation:
         "The local grammar pass checks sentence-boundary capitalization.",
+      reason: "A lowercase letter appears at a likely sentence boundary.",
       start,
       end: start + 1,
       original: match[2],
@@ -218,10 +270,17 @@ function capitalizationSuggestions(text: string): Suggestion[] {
   return suggestions;
 }
 
-function finalPunctuationSuggestion(text: string): Suggestion[] {
+function finalPunctuationSuggestion(
+  text: string,
+  documentKind: AnalysisResult["document"]["kind"],
+): Suggestion[] {
   const trimmed = text.trimEnd();
 
-  if (!trimmed || /[.!?]$/.test(trimmed)) {
+  if (
+    !trimmed ||
+    /[.!?]$/.test(trimmed) ||
+    ["markdown", "email-template", "empty"].includes(documentKind)
+  ) {
     return [];
   }
 
@@ -235,6 +294,7 @@ function finalPunctuationSuggestion(text: string): Suggestion[] {
       title: "Add ending punctuation",
       message: "The final sentence may need punctuation.",
       explanation: "This mirrors a common grammar-tool document cleanup rule.",
+      reason: "The final prose sentence has no ending punctuation.",
       start: trimmed.length,
       end: trimmed.length,
       original: "",
@@ -260,6 +320,7 @@ function passiveVoiceSuggestions(text: string): Suggestion[] {
       title: "Check passive voice",
       message: "Passive voice can hide the actor.",
       explanation: "Use active voice when the actor matters.",
+      reason: "A form of 'to be' is followed by a likely past participle.",
       start: match.index,
       end: match.index + match[0].length,
       original: match[0],
@@ -272,9 +333,15 @@ function passiveVoiceSuggestions(text: string): Suggestion[] {
   return suggestions;
 }
 
-function longSentenceSuggestions(text: string): Suggestion[] {
+function longSentenceSuggestions(
+  text: string,
+  zones: ReturnType<typeof prepareInput>["zones"],
+): Suggestion[] {
   return splitSentences(text)
     .filter((sentence) => countWords(sentence.text) > 28)
+    .filter(
+      (sentence) => !overlapsIgnoredZone(sentence.start, sentence.end, zones),
+    )
     .map((sentence) => ({
       id: `style.long-sentence:${sentence.start}`,
       ruleId: "style.long-sentence",
@@ -285,6 +352,8 @@ function longSentenceSuggestions(text: string): Suggestion[] {
       message: "This sentence is long enough to slow readers down.",
       explanation:
         "Vale-style editorial rules flag long sentences for scannability.",
+      reason:
+        "The sentence is over the configured 28-word readability threshold.",
       start: sentence.start,
       end: sentence.end,
       original: sentence.text,
@@ -293,8 +362,13 @@ function longSentenceSuggestions(text: string): Suggestion[] {
     }));
 }
 
-function rewriteSuggestions(text: string): Suggestion[] {
-  const sentences = splitSentences(text);
+function rewriteSuggestions(
+  text: string,
+  zones: ReturnType<typeof prepareInput>["zones"],
+): Suggestion[] {
+  const sentences = splitSentences(text).filter(
+    (sentence) => !overlapsIgnoredZone(sentence.start, sentence.end, zones),
+  );
   const firstLongSentence = sentences.find(
     (sentence) => countWords(sentence.text) > 14,
   );
@@ -324,6 +398,8 @@ function rewriteSuggestions(text: string): Suggestion[] {
       message: "A deterministic local rewrite can make this sentence tighter.",
       explanation:
         "This v1 rewrite adapter is local-only and does not call an LLM service.",
+      reason:
+        "The sentence contains removable filler or a simpler replacement.",
       start: firstLongSentence.start,
       end: firstLongSentence.end,
       original: firstLongSentence.text,
@@ -361,4 +437,128 @@ function countWords(text: string): number {
 
 function normalizeWord(word: string): string {
   return word.toLowerCase().replace(/^'+|'+$/g, "");
+}
+
+function filterIgnored(
+  suggestions: Suggestion[],
+  zones: ReturnType<typeof prepareInput>["zones"],
+): Suggestion[] {
+  return suggestions.filter(
+    (suggestion) =>
+      !overlapsIgnoredZone(suggestion.start, suggestion.end, zones),
+  );
+}
+
+function groupSuggestions(suggestions: Suggestion[]): Suggestion[] {
+  const grouped = new Map<string, Suggestion>();
+
+  for (const suggestion of suggestions) {
+    const key = groupKey(suggestion);
+    const existing = grouped.get(key);
+
+    if (!existing) {
+      grouped.set(key, {
+        ...suggestion,
+        groupId: key,
+        occurrences: suggestion.occurrences ?? 1,
+      });
+      continue;
+    }
+
+    existing.occurrences =
+      (existing.occurrences ?? 1) + (suggestion.occurrences ?? 1);
+    existing.confidence = Math.max(existing.confidence, suggestion.confidence);
+    existing.reason =
+      existing.occurrences > 1
+        ? `${existing.reason} This pattern appears ${existing.occurrences} times.`
+        : existing.reason;
+  }
+
+  return Array.from(grouped.values()).sort(
+    (a, b) => a.start - b.start || a.ruleId.localeCompare(b.ruleId),
+  );
+}
+
+function groupKey(suggestion: Suggestion): string {
+  if (suggestion.ruleId === "style.long-sentence") {
+    return suggestion.ruleId;
+  }
+
+  if (suggestion.ruleId === "anomaly.repeated-pattern") {
+    return suggestion.ruleId;
+  }
+
+  return `${suggestion.ruleId}:${suggestion.start}:${suggestion.end}:${suggestion.replacements.join("|")}`;
+}
+
+function analysisState(
+  words: number,
+  suggestionCount: number,
+): AnalysisResult["stats"]["state"] {
+  if (words === 0) {
+    return "loaded-empty";
+  }
+
+  if (suggestionCount === 0) {
+    return "loaded-no-issues";
+  }
+
+  if (suggestionCount > 25) {
+    return "loaded-many";
+  }
+
+  return "loaded-some";
+}
+
+function documentVocabulary(
+  kind: AnalysisResult["document"]["kind"],
+): string[] {
+  const common = [
+    "cybersecurity",
+    "digitalisation",
+    "unsubscribe",
+    "baditaflorin",
+    "local",
+    "proofreader",
+  ];
+  const byKind: Record<AnalysisResult["document"]["kind"], string[]> = {
+    empty: [],
+    plain: [],
+    "legal-sec": [
+      "adversaries",
+      "cybersecurity",
+      "infrastructure",
+      "initiative",
+      "tenants",
+    ],
+    "public-sector-pdf": ["council", "digitalisation", "fundamental", "press"],
+    markdown: ["npm", "repo", "github", "install", "local-proofreader"],
+    "email-template": [
+      "unsubscribe",
+      "mailto",
+      "href",
+      "newsletter",
+      "placeholder",
+    ],
+    "social-comment": ["atleast"],
+    "mixed-language": [],
+    huge: [
+      "adversaries",
+      "cybersecurity",
+      "infrastructure",
+      "initiative",
+      "tenants",
+    ],
+  };
+
+  return [...common, ...byKind[kind]];
+}
+
+function stableHash(text: string): string {
+  let hash = 0x811c9dc5;
+  for (const char of text) {
+    hash ^= char.charCodeAt(0);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return (hash >>> 0).toString(16).padStart(8, "0");
 }
