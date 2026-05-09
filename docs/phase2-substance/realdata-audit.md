@@ -83,3 +83,7 @@ Baseline pass rate: 3/10 if “useful first pass” allows mild noise; 1/10 if �
 - No broad multilingual grammar engine in Phase 2; mixed-language detection and “do not confidently lint this” behavior are in scope.
 - No browser-store packaging work for the extension.
 - No export feature expansion beyond metadata needed for reproducibility if existing local report/history output touches it.
+
+## Completion Note
+
+Phase 2 closed at a 10/10 fixture-contract pass rate with deterministic repeated runs. The detailed completion notes live in `docs/postmortem-phase2-substance.md` and `docs/perf/phase2-fixtures.md`.

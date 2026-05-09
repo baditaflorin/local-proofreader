@@ -169,3 +169,37 @@ export interface AnalysisSnapshot {
   styleCount: number;
   rewriteCount: number;
 }
+
+export interface AppSettings {
+  autoAnalyze: boolean;
+  includeRewrite: boolean;
+  persistDraft: boolean;
+  restoreSession: boolean;
+  showConfidence: boolean;
+  showDebugPanel: boolean;
+}
+
+export type ActiveSuggestionFilter = "all" | SuggestionCategory;
+
+export interface SavedSession {
+  schemaVersion: "session.v1";
+  createdAt: string;
+  source: string;
+  text: string;
+  activeCategory: ActiveSuggestionFilter;
+  customWords: string[];
+  settings: AppSettings;
+}
+
+export interface DraftSessionRecord {
+  key: "last-session";
+  savedAt: string;
+  session: SavedSession;
+}
+
+export interface AnalysisExport {
+  schemaVersion: "analysis-export.v1";
+  createdAt: string;
+  session: SavedSession;
+  analysis: AnalysisResult;
+}

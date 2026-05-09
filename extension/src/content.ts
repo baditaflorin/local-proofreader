@@ -1,11 +1,7 @@
-interface InlineSuggestion {
-  title: string;
-  message: string;
-  original: string;
-  replacement: string;
-  start: number;
-  end: number;
-}
+import {
+  analyzeInlineText,
+  type InlineSuggestion,
+} from "../../src/features/proofreader/inlineRules";
 
 type Editable = HTMLTextAreaElement | HTMLInputElement | HTMLElement;
 
@@ -104,7 +100,7 @@ button.addEventListener("click", () => {
     return;
   }
 
-  const suggestions = analyzeInline(getEditableText(activeEditable));
+  const suggestions = analyzeInlineText(getEditableText(activeEditable));
   renderPanel(activeEditable, suggestions);
 });
 
@@ -200,60 +196,4 @@ function applyInlineSuggestion(
     `${text.slice(0, suggestion.start)}${suggestion.replacement}${text.slice(suggestion.end)}`,
   );
   panel.hidden = true;
-}
-
-function analyzeInline(text: string): InlineSuggestion[] {
-  const rules: Array<{
-    title: string;
-    message: string;
-    pattern: RegExp;
-    replacement: string | ((match: RegExpExecArray) => string);
-  }> = [
-    {
-      title: 'Use "a lot"',
-      message: '"Alot" is usually written as two words.',
-      pattern: /\balot\b/gi,
-      replacement: "a lot",
-    },
-    {
-      title: 'Use "could have"',
-      message: '"Could of" is a sound-alike error.',
-      pattern: /\b(could|should|would)\s+of\b/gi,
-      replacement: (match) => `${match[1].toLowerCase()} have`,
-    },
-    {
-      title: "Repeated word",
-      message: "The same word appears twice in a row.",
-      pattern: /\b([A-Za-z]+)\s+\1\b/gi,
-      replacement: (match) => match[1],
-    },
-    {
-      title: "Prefer simpler wording",
-      message: 'Use "use" unless "utilize" adds a technical distinction.',
-      pattern: /\butilize\b/gi,
-      replacement: "use",
-    },
-  ];
-
-  return rules.flatMap((rule) => {
-    const suggestions: InlineSuggestion[] = [];
-    let match = rule.pattern.exec(text);
-
-    while (match && suggestions.length < 4) {
-      suggestions.push({
-        title: rule.title,
-        message: rule.message,
-        original: match[0],
-        replacement:
-          typeof rule.replacement === "function"
-            ? rule.replacement(match)
-            : rule.replacement,
-        start: match.index,
-        end: match.index + match[0].length,
-      });
-      match = rule.pattern.exec(text);
-    }
-
-    return suggestions;
-  });
 }

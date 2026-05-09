@@ -13,7 +13,7 @@ help:
 		'pages-preview     serve docs/ locally like GitHub Pages' \
 		'hooks-pre-commit  run the pre-commit hook manually' \
 		'hooks-pre-push    run the pre-push hook manually' \
-		'release           tag v0.1.0 after checks pass' \
+		'release           tag the current package version after checks pass' \
 		'clean             remove generated build/test output'
 
 install-hooks:
@@ -61,7 +61,8 @@ hooks-post-checkout:
 	.githooks/post-checkout
 
 release: lint test build smoke
-	git tag -a v0.1.0 -m "v0.1.0"
+	@version="$$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version)")"; \
+	git tag -a "v$$version" -m "v$$version"
 
 clean:
 	rm -rf docs coverage playwright-report test-results

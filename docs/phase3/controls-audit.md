@@ -5,21 +5,29 @@ Audit date: 2026-05-09
 Legend:
 
 - `green` label matches end-to-end behavior on real input
-- `yellow` partially true or too narrow
-- `red` stub, misleading, or missing for an advertised flow
+- `scope` intentionally out of scope in Phase 3 with ADR coverage
 
-| Control                        | Status | Evidence                                   | Gap                                                                             |
-| ------------------------------ | ------ | ------------------------------------------ | ------------------------------------------------------------------------------- |
-| `GitHub` link                  | green  | Opens repository                           | None                                                                            |
-| `PayPal` link                  | green  | Opens support link                         | None                                                                            |
-| `Analyze` / `Cancel` button    | yellow | Runs worker and can cancel current request | State is clearer now, but there is no manual “retry with last state” affordance |
-| Filter chips                   | green  | Filter suggestions by category             | None                                                                            |
-| Suggestion replacement buttons | green  | Apply replacements into editor             | No undo stack and no “ignore once” control                                      |
-| `Add word`                     | yellow | Persists custom word locally               | There is no way to review or remove custom words                                |
-| `Build report`                 | yellow | Builds a summary from local history        | No export, no empty-history guidance beyond error text                          |
-| Textarea itself                | yellow | Accepts typing and paste                   | Not a complete real-data input surface                                          |
+| Control                                         | Status | Evidence                                                           | Gap                    |
+| ----------------------------------------------- | ------ | ------------------------------------------------------------------ | ---------------------- |
+| `GitHub` link                                   | green  | Opens repository                                                   | None                   |
+| `PayPal` link                                   | green  | Opens support link                                                 | None                   |
+| `Analyze` / `Cancel` button                     | green  | Runs worker, exposes large-input state, and can cancel             | None                   |
+| `Sample`                                        | green  | Reloads the built-in sample draft                                  | None                   |
+| `Import files`                                  | green  | Handles text, HTML, Markdown, session JSON, and multi-file imports | None                   |
+| `Clipboard`                                     | green  | Reads clipboard text or explains why the browser blocked it        | None                   |
+| `Start fresh`                                   | green  | Clears the working draft and share hash                            | None                   |
+| `Copy summary`                                  | green  | Copies a human-readable report                                     | None                   |
+| `Draft text` / `Analysis JSON` / `Session JSON` | green  | All three exports download correctly                               | None                   |
+| `Share URL`                                     | green  | Generates a small-session share link                               | None                   |
+| Filter chips                                    | green  | Filter suggestions by category                                     | None                   |
+| Suggestion replacement buttons                  | green  | Apply replacements into editor                                     | No multi-step undo yet |
+| `Add word`                                      | green  | Persists words and exposes removal/clear controls                  | None                   |
+| `Build report`                                  | green  | Builds history summary and handles empty history cleanly           | None                   |
+| `Clear history`                                 | green  | Removes saved history end to end                                   | None                   |
+| Settings toggles                                | green  | Every toggle changes stored behavior                               | None                   |
+| Textarea itself                                 | green  | Accepts typing, paste, and dropped-file workflow around it         | None                   |
 
 Notes:
 
-- There are no obvious dead buttons in the current UI.
-- The real issue is missing controls: import, export, restore, reset, and settings are absent rather than stubbed.
+- There are no stubbed controls left in the production UI.
+- The biggest remaining usability gap is the lack of a richer undo/history model, not mislabeled buttons.

@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 function git(args, fallback) {
   try {
@@ -25,7 +25,8 @@ const sourceCommit = git(
   ],
   "uncommitted",
 );
-const tag = git(["describe", "--tags", "--abbrev=0"], "v0.1.0");
+const packageVersion = JSON.parse(readFileSync("package.json", "utf8")).version;
+const version = `v${packageVersion}`;
 const dirty =
   git(
     [
@@ -49,7 +50,7 @@ writeFileSync(
   `${JSON.stringify(
     {
       name: "local-proofreader",
-      version: tag,
+      version,
       commit: sourceCommit,
       dirty,
       builtAt,

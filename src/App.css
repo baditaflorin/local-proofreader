@@ -45,6 +45,7 @@ a {
 
 .topbar,
 .statusBand,
+.controlGrid,
 .workspace,
 .labBand,
 footer {
@@ -148,6 +149,13 @@ h2 {
   align-items: start;
 }
 
+.controlGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.controlCard,
 .editorPane,
 .suggestionPane,
 .labBand {
@@ -155,6 +163,64 @@ h2 {
   border-radius: 8px;
   background: #fffffb;
   box-shadow: 0 16px 44px rgba(57, 55, 44, 0.08);
+}
+
+.controlCard {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.controlHeader {
+  display: grid;
+  gap: 6px;
+}
+
+.controlHeader p,
+.controlCard small,
+.dictionaryPanel small {
+  color: #617067;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.controlActions,
+.settingsGrid,
+.dictionaryList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.controlActions button {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid #c8d4c5;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #162019;
+  padding: 0 12px;
+  font-weight: 750;
+}
+
+.settingToggle {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #d8d6ca;
+  border-radius: 8px;
+  background: #f8f7f0;
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.settingToggle input {
+  accent-color: #2f7d65;
 }
 
 .editorPane,
@@ -198,6 +264,11 @@ textarea:focus {
   box-shadow: inset 0 0 0 3px #cfe7db;
 }
 
+.dropActive {
+  border-color: #2f7d65;
+  box-shadow: 0 0 0 3px #d3ebe0;
+}
+
 .statsGrid,
 .reportGrid {
   border-top: 1px solid #e4e0d4;
@@ -229,6 +300,40 @@ textarea:focus {
 
 .suggestionPane {
   max-height: 760px;
+}
+
+.dictionaryPanel {
+  display: grid;
+  gap: 10px;
+  border-top: 1px solid #e4e0d4;
+  padding: 12px;
+}
+
+.dictionaryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dictionaryHeader h3 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.dictionaryHeader button,
+.dictionaryList button {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #d8d6ca;
+  border-radius: 8px;
+  background: #f8f7f0;
+  padding: 0 10px;
+  color: #365345;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .filters {
@@ -298,6 +403,13 @@ textarea:focus {
   background: #5a4ba0;
 }
 
+.suggestionTitle em {
+  color: #617067;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+}
+
 .suggestionCard p {
   margin-top: 10px;
   color: #3e4b43;
@@ -329,7 +441,8 @@ blockquote {
 }
 
 .emptyState,
-.errorBox {
+.errorBox,
+.noticeBox {
   display: grid;
   place-items: center;
   gap: 10px;
@@ -346,6 +459,38 @@ blockquote {
   border-color: #e2a39c;
   background: #fff4f2;
   color: #7b2b25;
+}
+
+.noticeBox {
+  border-style: solid;
+  border-color: #bbd8ca;
+  background: #eef7f1;
+  color: #2d5a47;
+}
+
+.debugPanel {
+  border: 1px solid #d7d4c8;
+  border-radius: 8px;
+  background: #fffffb;
+  padding: 16px;
+}
+
+.debugPanel summary {
+  cursor: pointer;
+  color: #365345;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.debugPanel pre {
+  margin: 12px 0 0;
+  overflow: auto;
+  border-radius: 8px;
+  background: #f3f1ea;
+  padding: 12px;
+  color: #24312a;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .labBand {
@@ -386,6 +531,7 @@ footer {
   }
 
   .topbar,
+  .controlGrid,
   .workspace,
   .labBand {
     grid-template-columns: 1fr;

@@ -120,7 +120,7 @@ export async function analyzeText(
     normalizations: prepared.normalizations,
     provenance: {
       schemaVersion: "phase2.v1",
-      appVersion: request.appVersion ?? "v0.1.0",
+      appVersion: request.appVersion ?? "v0.3.0",
       sourceHash: stableHash(text),
       generatedAt,
       parameters: {
@@ -468,10 +468,14 @@ function groupSuggestions(suggestions: Suggestion[]): Suggestion[] {
     existing.occurrences =
       (existing.occurrences ?? 1) + (suggestion.occurrences ?? 1);
     existing.confidence = Math.max(existing.confidence, suggestion.confidence);
+    const baseReason = existing.reason.replace(
+      / This pattern appears \d+ times\.$/,
+      "",
+    );
     existing.reason =
       existing.occurrences > 1
-        ? `${existing.reason} This pattern appears ${existing.occurrences} times.`
-        : existing.reason;
+        ? `${baseReason} This pattern appears ${existing.occurrences} times.`
+        : baseReason;
   }
 
   return Array.from(grouped.values()).sort(
@@ -503,7 +507,7 @@ function analysisState(
     return "loaded-no-issues";
   }
 
-  if (suggestionCount > 25) {
+  if (words > 5000 || suggestionCount > 25) {
     return "loaded-many";
   }
 

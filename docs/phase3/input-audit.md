@@ -6,34 +6,33 @@ Legend:
 
 - `green` works fully
 - `yellow` works partially
-- `red` claimed but broken or not built
+- `scope` intentionally out of scope in Phase 3 with ADR coverage
 
-| Pathway                        | Status | Evidence                                                              | Gap                                                        |
-| ------------------------------ | ------ | --------------------------------------------------------------------- | ---------------------------------------------------------- |
-| Sample draft on first load     | green  | `src/App.tsx` seeds `sampleText` into the editor                      | None                                                       |
-| Direct typing in editor        | green  | `<textarea>` is the main input surface                                | None                                                       |
-| Paste plain text into editor   | green  | Native textarea paste works                                           | No paste-specific guidance or normalization feedback       |
-| Paste rich HTML into editor    | yellow | Browser strips to plain text in textarea                              | User gets no signal that formatting/links were flattened   |
-| File upload                    | red    | No file picker or importer in app                                     | Real users cannot load `.txt`, `.md`, or saved state files |
-| Drag and drop file input       | red    | No drop handlers or drop zone                                         | Real user flow is blocked for desktop drag-drop            |
-| Clipboard read button          | red    | No `navigator.clipboard.readText()` flow                              | Users must manually focus and paste                        |
-| URL input                      | red    | No URL entry surface                                                  | No honest guidance around Pages/CORS limitations           |
-| Multi-file input               | red    | No batch import path                                                  | Impossible to compare or process several drafts            |
-| Folder input                   | red    | No folder picker                                                      | Out of scope for v1 unless explicitly added                |
-| Mobile picker                  | red    | No file input means no mobile files path                              | iOS Files / Android picker unsupported                     |
-| Imported state file            | red    | No state import contract in UI                                        | Can’t resume work on another machine                       |
-| Deep link / share state        | red    | No hash or query state support                                        | Collaboration and support are harder than needed           |
-| Restored autosave              | yellow | Analysis snapshots persist, but not full draft text or UI state       | Reload can lose the working draft                          |
-| Browser extension inline input | yellow | Extension supports textareas, text inputs, and contenteditable fields | It does not reuse the app inference engine or persistence  |
+| Pathway                        | Status | Evidence                                                                    | Gap                                                       |
+| ------------------------------ | ------ | --------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Sample draft on first load     | green  | `Sample` control and default sample draft                                   | None                                                      |
+| Direct typing in editor        | green  | `<textarea>` remains the main input surface                                 | None                                                      |
+| Paste plain text into editor   | green  | Native textarea paste works                                                 | None                                                      |
+| Paste rich HTML into editor    | yellow | Rich paste still becomes plain text in the textarea                         | Importing `.html` files is clearer than direct HTML paste |
+| File upload                    | green  | `Import files` accepts `.txt`, `.md`, `.html`, and session `.json`          | None                                                      |
+| Drag and drop file input       | green  | Editor pane is a drop target                                                | None                                                      |
+| Clipboard read button          | green  | `Clipboard` uses `navigator.clipboard.readText()` with actionable failures  | Browser permission prompts still vary by platform         |
+| URL input                      | scope  | Explicitly documented as out of scope in ADR 0061 and in the UI             | Mode A browser CORS limits external fetches               |
+| Multi-file input               | green  | Multiple text-like files import into one working draft                      | None                                                      |
+| Folder input                   | scope  | Explicitly deferred in ADR 0061                                             | Lower-value than file import for v1                       |
+| Mobile picker                  | green  | Standard file input works on mobile file pickers                            | Device-specific picker UX depends on browser              |
+| Imported state file            | green  | Versioned session `.json` import restores draft, settings, and custom words | None                                                      |
+| Deep link / share state        | green  | URL hash import/export works for smaller sessions                           | Large drafts still need session export                    |
+| Restored autosave              | green  | Last-session draft restore is persisted locally                             | None                                                      |
+| Browser extension inline input | green  | Extension works on textareas, text inputs, and contenteditable fields       | It intentionally remains lighter than the full app        |
 
 Summary:
 
-- Green: 3
-- Yellow: 3
-- Red: 9
+- Green: 11
+- Yellow: 1
+- Out of scope: 2
 
-Top blockers:
+Notes:
 
-1. There is no first-class “bring your own file” path.
-2. There is no portable state import/export path.
-3. Reload persistence is too thin for real work.
+1. The only intentionally unsupported input path is remote URL fetch, because Pages cannot make that reliable without adding a backend.
+2. Rich HTML paste is acceptable but still less transparent than importing an HTML file.
