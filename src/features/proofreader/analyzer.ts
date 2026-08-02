@@ -80,6 +80,7 @@ export async function analyzeText(
       ),
     ),
     ...filterIgnored(regexSuggestions(text, grammarRules), prepared.zones),
+    ...filterIgnored(regexSuggestions(text, styleRules), prepared.zones),
     ...filterIgnored(repeatedWordSuggestions(text), prepared.zones),
     ...filterIgnored(capitalizationSuggestions(text), prepared.zones),
     ...finalPunctuationSuggestion(text, prepared.document.kind),
