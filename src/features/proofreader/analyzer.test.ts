@@ -39,4 +39,27 @@ describe("analyzeText", () => {
     ).toBe(true);
     expect(result.stats.words).toBeGreaterThan(20);
   });
+
+  it("applies the Vale-style jargon, hedging, and weasel-word rules end to end", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response("", { status: 404 })),
+    );
+
+    const result = await analyzeText({
+      text: "We should really utilize synergy. This paradigm shift is a low-hanging fruit that maybe, perhaps, somewhat helps.",
+      basePath: "/",
+      customWords: [],
+    });
+
+    const ruleIds = result.suggestions.map((suggestion) => suggestion.ruleId);
+
+    // These rules live in the `styleRules` table (rules.ts) and must be run
+    // through `regexSuggestions` inside `analyzeText`, not just unit-tested
+    // in isolation, or they silently never fire in the real app.
+    expect(ruleIds).toContain("style.weasel-very");
+    expect(ruleIds).toContain("style.utilize");
+    expect(ruleIds).toContain("style.jargon");
+    expect(ruleIds).toContain("style.hedge");
+  });
 });
